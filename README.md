@@ -8,9 +8,9 @@ demo web-server for social network project
 ## API
 for more information run postman collection `flask.postman_collection.json`
 - `POST /login` - sign in for registered user
-- `POST /users/register` - new user registration
-- `GET /users/<id>` - get user's profile
-- `POST /users/search` - search user
+- `POST /user/register` - new user registration
+- `GET /user/<id>` - get user's profile
+- `POST /user/search` - search user
 
 ## install instructions 
 - install and create a new virtual environment
@@ -35,4 +35,6 @@ user: root
 pass: password
 db: flask
 ```
-- run `create_db.py` to create users table in flask db
+- run `python create_db.py` to create users table in flask db
+
+- run `python main.py` to start flask_demo (127.0.0.1:8000)
