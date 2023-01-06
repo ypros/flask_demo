@@ -6,12 +6,14 @@ demo web-server for social network project
 - Authorization with JWT
 - Front interface and API 
 ## API
-api specification in `openapi.yaml`
+api specification in [openapi.yaml](https://github.com/ypros/flask_demo/blob/main/openapi.yaml)
+
+for more information run postman collection [flask.postman_collection.json](https://github.com/ypros/flask_demo/blob/main/flask.postman_collection.json)
 - `POST /login` - sign in for registered user
 - `POST /user/register` - new user registration
 - `GET /user/<id>` - get user's profile
 - `GET /user/search` - search user
-for more information run postman collection `flask.postman_collection.json`
+
 
 ## install instructions 
 - install and create a new virtual environment
