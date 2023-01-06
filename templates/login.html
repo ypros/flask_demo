@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+   <h1>Please sign in</h1>
+   <br/>
+   <form method="POST" class="row w-50 g-3">
+      {{ form.hidden_tag() }}
+      <div class="col-md-12">
+         {{ form.id.label(class="form-label") }}
+         {{ form.id(class="form-control") }}
+      </div>
+      <div class="col-md-12">
+         {{ form.password.label(class="form-label") }}
+         {{ form.password(class="form-control", type="password") }}
+      </div>
+      <div class="col-12">
+         {{form.submit(class="btn btn-primary")}}
+      </div>
+   </form>  
+
+{% endblock %}
