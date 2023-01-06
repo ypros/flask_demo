@@ -141,7 +141,7 @@ def api_user(id):
    
 
 #search users by name
-@app.route('/api/v1/user/search', methods=['POST'])
+@app.route('/api/v1/user/search', methods=['GET'])
 def api_search():
 
     first_name = request.args.get("first_name")

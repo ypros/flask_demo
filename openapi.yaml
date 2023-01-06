@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: flask_demo
+  description: webserver demo for OTUS Highload Architect
+  version: 1.0.0
+externalDocs:
+  description: github repo
+  url: https://github.com/ypros/flask_demo
+servers:
+  - url: http://127.0.0.1/api/v1
+paths:
+  /login:
+    post:
+      description: Simple auth method
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: 5a24a6ad-43dd-41d6-b2a7-6a2ec648b32b 
+                password:
+                  type: string
+                  example: 12345
+              required:
+                - id
+                - password
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzI5ODMxNDQsImlhdCI6MTY3Mjk4MzEzOSwic3ViIjoiMTJiZDQzMGItZWNmMC00ZjI2LTliODktYzc3MDc4Nzk1N2YxIn0.WjqT4B23mXZKczk2NKpZU_hEnMTid_Ddo3RuvcXdChE
+        '400':
+          description: Invalid request
+        '404':
+          description: User not found
+  /user/register:
+    post:
+      description: New user registration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                  example: John 
+                last_name:
+                  type: string
+                  example: Smith
+                age:
+                  type: integer
+                  example: 40 
+                biography:
+                  type: string
+                  example: Some words about me
+                city:
+                  type: string
+                  example: Springfiled
+                password:
+                  type: string
+                  example: 12345
+              required:
+                - first_name
+                - last_name
+                - password
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    example: 5a24a6ad-43dd-41d6-b2a7-6a2ec648b32b
+        '400':
+          description: Invalid request
+
+  /user/get/{id}:
+    get:
+      description: Get user's profile
+      parameters:
+        - name: id
+          schema:
+            type: string
+            description: user's id
+            example: e4d2e6b0-cde2-42c5-aac3-0b8316f21e58
+          required: true
+          in: path
+          description: user's id
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request
+        '404':
+          description: User not found
+
+  /user/search:
+    get:
+      description: Search uesr's profile by name
+      parameters:
+        - name: first_name
+          schema:
+            type: string
+            description: first name substring
+            example: Joh
+          in: query
+          required: true
+          description: Search substring by last name
+        - name: last_name
+          schema:
+            type: string
+            description: last name substring
+            example: mith
+          in: query
+          required: true
+          description: Search substring by last name
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid request
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: user's id
+        first_name:
+          type: string
+          example: John
+          description: name
+        last_name:
+          type: string
+          example: Smith
+          description: last name
+        age:
+          type: integer
+          example: 25
+          description: age
+        biography:
+          type: string
+          example: Some words about me
+          description: biography
+        city:
+          type: string
+          example: Springfield
+          description: city
+      required:
+        - id
+        - first_name
+        - last_name

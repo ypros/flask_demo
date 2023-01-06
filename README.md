@@ -6,11 +6,12 @@ demo web-server for social network project
 - Authorization with JWT
 - Front interface and API 
 ## API
-for more information run postman collection `flask.postman_collection.json`
+api specification in `openapi.yaml`
 - `POST /login` - sign in for registered user
 - `POST /user/register` - new user registration
 - `GET /user/<id>` - get user's profile
-- `POST /user/search` - search user
+- `GET /user/search` - search user
+for more information run postman collection `flask.postman_collection.json`
 
 ## install instructions 
 - install and create a new virtual environment
