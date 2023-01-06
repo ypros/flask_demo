@@ -65,7 +65,7 @@ def login():
 
 def encone_token(user_id):
     payload = {
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=5),
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=600),
         'iat': datetime.datetime.utcnow(),
         'sub': user_id
     }
@@ -96,14 +96,13 @@ def api_login():
     result = db.verify_user(user_id, password)
 
     if result:
-        token = jwt.encode({'user_id' : user_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
-
+        token = encone_token(user_id)
         return {"token": encone_token(user_id)}
     else:
         abort(400, "authentication failed")
 
 #register new user
-@app.route('/api/v1/register', methods=['POST'])
+@app.route('/api/v1/user/register', methods=['POST'])
 def api_register():
 
     post_data = request.get_json()
@@ -116,25 +115,33 @@ def api_register():
     biography = post_data.get("biography")
 
     if first_name is None:
-        return abort(400, 'Record not found') 
-        return {"success": False, "comment": "'first_name' parameter is required"}
+        abort(400, "'first_name' parameter is required") 
 
     if last_name is None:
-        return {"success": False, "comment": "'last_name' parameter is required"}
+        abort(400, "'last_name' parameter is required") 
 
     if password is None:
-        return {"success": False, "comment": "'password' parameter is required"}
+        abort(400, "'password' parameter is required") 
 
-
-    result = db.verify_user(user_id, password)
+    result = db.create_new_user(first_name, last_name, password, age, city, biography)
 
     if result:
-        return {"success": True}
+        return {"user_id": result}
     else:
-        return {"success": False, "comment": "authentication failed"}    
+        abort(500) 
+
+#get user's data
+@app.route('/api/v1/user/<id>', methods=['GET'])
+def api_user(id):
+    user_info = db.get_user_info(id)
+    if user_info is None:
+        abort(404, "User not found")
+    else:   
+        return user_info
+   
 
 #search users by name
-@app.route('/api/v1/search', methods=['POST'])
+@app.route('/api/v1/user/search', methods=['POST'])
 def api_search():
 
     first_name = request.args.get("first_name")

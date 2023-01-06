@@ -52,18 +52,21 @@ def get_user_info(user_id):
 #GET USERS FROM USERS TABLE SEARCHING ON NAMES 
 def search_user(first_name, last_name):
     cursor = mydb.cursor()
-    sql = "SELECT id, first_name, last_name FROM users WHERE first_name LIKE %s OR last_name LIKE %s"
+    sql = "SELECT id, first_name, last_name, age, biography, city FROM users WHERE first_name LIKE %s OR last_name LIKE %s"
     val = (f"%{first_name}%", f"%{last_name}%")
 
     cursor.execute(sql, val)
 
     result = []
     
-    for (id, first_name, last_name) in cursor:
+    for (id, first_name, last_name, age, biography, city) in cursor:
         result.append({
             "id": id,
             "first_name": first_name,
-            "last_name": last_name
+            "last_name": last_name,
+            "age": age,
+            "biography": biography,
+            "city": city
         })
 
     cursor.close()
