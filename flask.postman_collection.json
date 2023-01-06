@@ -90,12 +90,12 @@
 			"response": []
 		},
 		{
-			"name": "POST search",
+			"name": "GET search",
 			"protocolProfileBehavior": {
 				"disabledSystemHeaders": {}
 			},
 			"request": {
-				"method": "POST",
+				"method": "GET",
 				"header": [],
 				"url": {
 					"raw": "127.0.0.1:8000/api/v1/user/search?first_name=har",
