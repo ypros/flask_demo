@@ -6,6 +6,8 @@ import forms, db
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'D3O5W8iIsiGjoLck1KQ3VzjCypqvT7oV'
+app.config["JSON_AS_ASCII"] = False
+app.config["JSONIFY_MIMETYPE"] = "application/json; charset=utf-8"
 
 @app.route('/')
 def index():
@@ -149,7 +151,6 @@ def api_search():
 
     if first_name is None and last_name is None:
         abort(400, "at least one of the parameters 'first_name' or 'last_name' is required")
-
 
     result = db.search_user(first_name, last_name)
 
