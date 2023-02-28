@@ -26,5 +26,52 @@ except mysql.connector.Error as err:
 else:
     print("users table created")
 
+
+try:
+    my_cursor.execute("""
+
+    DROP TABLE IF EXISTS flask.friends;
+    
+    CREATE TABLE flask.friends (
+        id CHAR(36) NOT NULL,
+        user CHAR(36) NOT NULL,
+        friend CHAR(36) NOT NULL,
+        CONSTRAINT friends_PK PRIMARY KEY (id),
+        CONSTRAINT friends_FK FOREIGN KEY (user) REFERENCES flask.users(id),
+        CONSTRAINT friends_FK_1 FOREIGN KEY (friend) REFERENCES flask.users(id)
+    )
+    ENGINE=InnoDB
+    
+    CREATE INDEX friends_user_IDX USING BTREE ON flask.friends (user);
+    CREATE INDEX friends_friend_IDX USING BTREE ON flask.friends (friend);
+    """, multi=True)
+except mysql.connector.Error as err:
+    print(err.msg)
+else:
+    print("users table created")
+
+
+try:
+    my_cursor.execute("""
+
+    DROP TABLE IF EXISTS flask.posts;
+    CREATE TABLE flask.posts (
+        id char(36) NOT NULL,
+        author_user_id char(36) NULL,
+        `text` TEXT NULL,
+        created_at DATETIME NOT NULL,
+        CONSTRAINT posts_PK PRIMARY KEY (id),
+        CONSTRAINT posts_FK FOREIGN KEY (author_user_id) REFERENCES flask.users(id)
+    )
+    ENGINE=InnoDB
+    
+    CREATE INDEX friends_user_IDX USING BTREE ON flask.friends (user);
+    CREATE INDEX friends_friend_IDX USING BTREE ON flask.friends (friend);
+    """, multi=True)
+except mysql.connector.Error as err:
+    print(err.msg)
+else:
+    print("users table created")
+
 my_cursor.close()
 mydb.close()

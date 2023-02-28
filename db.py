@@ -1,5 +1,6 @@
 import mysql.connector
 import uuid
+import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 mydb = mysql.connector.connect(
@@ -7,6 +8,8 @@ mydb = mysql.connector.connect(
     password='password',
     host='127.0.0.1',
     database='flask')
+
+
  
 #CREATE NEW USER IN USERS TABLE
 def create_new_user(first_name, last_name, password, age, biography, city):
@@ -47,22 +50,21 @@ def get_user_info(user_id):
 
     cursor.close()
 
+
+
     return result
 
 #GET USERS FROM USERS TABLE SEARCHING ON NAMES 
 def search_user(first_name, last_name):
 
-    mydb = mysql.connector.connect(
-        user='root',
-        password='password',
-        host='127.0.0.1',
-        database='flask')
-
     cursor = mydb.cursor()
     sql = "SELECT id, first_name, last_name, age, biography, city FROM users WHERE first_name LIKE %s AND last_name LIKE %s ORDER BY id"
     val = (f"{first_name}%", f"{last_name}%")
 
-    cursor.execute(sql, val)
+    try:
+        cursor.execute(sql, val)
+    except mysql.connector.Error as err:
+        return {'success': False, 'message': err.msg, 'payload': ""} 
 
     result = []
     
@@ -77,9 +79,46 @@ def search_user(first_name, last_name):
         })
 
     cursor.close()
-    mydb.close()
 
-    return result
+    return  {'success': True, 'message': "", 'payload': result}
+
+def add_friend(user_id, friend_id):
+
+    cursor = mydb.cursor()
+    sql = "INSERT INTO friends (user, friend) VALUES (%s, %s)"
+    val = (user_id, friend_id)
+
+    try:
+        cursor.execute(sql, val)
+        mydb.commit()
+    except mysql.connector.Error as err:
+        return err.errno 
+
+    cursor.close()
+
+    return True
+
+
+#ADD USER'S POST IN POSTS
+def add_post(user_id, text):
+    post_id = str(uuid.uuid4())
+    current_datetime = datetime.datetime.utcnow()
+
+    cursor = mydb.cursor()
+    sql = "INSERT INTO posts (id, author_user_id, text, created_at) VALUES (%s, %s, %s, %s)"
+    val = (post_id, user_id, text, current_datetime)
+
+    try:
+        cursor.execute(sql, val)
+        mydb.commit()
+    except mysql.connector.Error as err:
+        print(err.msg)
+        return None 
+
+    cursor.close()
+
+    return post_id       
+
 
 #VERIFY USER PASSWORS FOR AUTH
 def verify_user(user_id, user_password):

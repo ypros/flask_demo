@@ -1,8 +1,7 @@
 from flask import Flask, render_template, flash, redirect, url_for, request, abort
+import forms, db
 import jwt
 import datetime
-import forms, db
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'D3O5W8iIsiGjoLck1KQ3VzjCypqvT7oV'
@@ -63,19 +62,7 @@ def login():
     return render_template('login.html', form=form)
 
 
-#service funstions section
 
-def encone_token(user_id):
-    payload = {
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=600),
-        'iat': datetime.datetime.utcnow(),
-        'sub': user_id
-    }
-    return jwt.encode(
-        payload,
-        app.config.get('SECRET_KEY'),
-        algorithm='HS256'
-    )
 
 
 #API functions section
@@ -99,7 +86,7 @@ def api_login():
 
     if result:
         token = encone_token(user_id)
-        return {"token": encone_token(user_id)}
+        return {"token": token}
     else:
         abort(400, "authentication failed")
 
@@ -155,6 +142,97 @@ def api_search():
     result = db.search_user(first_name, last_name)
 
     return result
+
+#set user's friend
+@app.route('/api/v1/friend/set/<user_id>', methods=['PUT'])
+def put_user_friend(user_id):
+
+    if 'Authentication' in request.headers:
+        token = request.headers.get('Authentication')
+        auth_data = decode_token(token)
+
+        if 'user_id' in auth_data:
+            current_user_id = auth_data['user_id']
+            result = db.add_friend(current_user_id, user_id)
+
+            if result == True:
+                return {"success": True}
+            elif result == 1062:
+                return {"success": False, "message": "Users are friends already"}
+            elif result == 1406:
+                return {"success": False, "message": "User id is invalid"}
+            elif result == 1452:
+                return {"success": False, "message": "User is not defined"}
+            else:
+                abort(400, "Bad request")
+        else:
+            abort(403, "Authentication token is invalid")
+
+    return {"success": False, "message": "Authentication token is required"}
+
+#create new post for currnet user
+@app.route('/api/v1/post/create', methods=['POST'])
+def create_post():
+
+    if 'Authentication' in request.headers:
+        token = request.headers.get('Authentication')
+        auth_data = decode_token(token)
+
+        if 'user_id' not in auth_data:
+            abort(403, "Authentication token is invalid")
+        current_user_id = auth_data['user_id']    
+
+        post_data = request.get_json(silent=True)
+        if post_data is None:
+            abort(400, "Bad request")
+        
+        text = post_data.get("text")
+        if text is None:
+            abort(400, "Post text is required")
+  
+        post_id = db.add_post(current_user_id, text)
+        if post_id is None:
+            return {"success": False, "message": "Error creating new post"}
+        else:
+            return post_id
+
+
+#service funstions section
+
+def encone_token(user_id):
+    """
+    Decodes the auth token
+    :param user_id:
+    :return: string
+    """
+    try:
+        payload = {
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=600),
+            'iat': datetime.datetime.utcnow(),
+            'sub': user_id
+        }
+        return jwt.encode(
+            payload,
+            app.config.get('SECRET_KEY'),
+            algorithm='HS256'
+        )
+    except Exception as e:
+        return e
+
+def decode_token(auth_token):
+    """
+    Decodes the auth token
+    :param auth_token:
+    :return: integer|string
+    """
+    try:
+        payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'), algorithms=["HS256"])
+        return {'user_id':payload['sub']}
+    except jwt.ExpiredSignatureError:
+        return {'error':'Signature expired. Please log in again.'}
+    except jwt.InvalidTokenError:
+        return {'error': 'Invalid token. Please log in again.'}
+
 
 if __name__ == "__main__":
     app.run(port=8000, debug=True)
