@@ -41,3 +41,9 @@ db: flask
 - run `python create_db.py` to create users table in flask db
 
 - run `python main.py` to start flask_demo (127.0.0.1:8000)
+
+- install memchaced
+```
+brew install memcached
+brew services start memcached
+```

@@ -98,6 +98,38 @@ def add_friend(user_id, friend_id):
 
     return True
 
+def get_feed(user_id):
+    cursor = mydb.cursor()
+    sql = """SELECT 
+                p.id id,
+                p.text text,
+                p.author_user_id author_user_id
+            from users u left join friends f on u.id  = f.user
+            left join posts p on f.friend = p.author_user_id
+            where u.id = %s
+            order by p.created_at DESC limit 1000 offset 0"""
+    val = [(user_id)]
+
+    try:
+        cursor.execute(sql, val)
+    except mysql.connector.Error as err:
+        return None
+
+    result = []
+    
+    for (id, text, author_user_id) in cursor:
+        result.append({
+            "id": id,
+            "text": text,
+            "author_user_id": author_user_id
+        })
+
+    cursor.close()
+
+    return result
+
+
+
 
 #ADD USER'S POST IN POSTS
 def add_post(user_id, text):

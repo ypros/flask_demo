@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, redirect, url_for, request, abort
-import forms, db
+import forms, db, cache
 import jwt
 import datetime
 
@@ -194,7 +194,43 @@ def create_post():
         if post_id is None:
             return {"success": False, "message": "Error creating new post"}
         else:
+            cache.clear_cache(current_user_id)
             return post_id
+    else:
+            abort(403, "Authentication token is invalid")
+
+#get user feed
+@app.route('/api/v1/post/feed', methods=['GET'])
+def get_feed():
+
+
+    try:
+        offset = int(request.args.get("offset"))
+    except:
+        offset = 0
+
+    try:
+        limit = int(request.args.get("limit"))
+    except:
+        limit = 10    
+
+    if 'Authentication' in request.headers:
+        token = request.headers.get('Authentication')
+        auth_data = decode_token(token)
+
+        if 'user_id' not in auth_data:
+            abort(403, "Authentication token is invalid")
+        
+        current_user_id = auth_data['user_id']    
+
+        feed = cache.get_feed_chached(current_user_id)
+        if feed is None:
+            return {"success": False, "message": "Error getting user's feed"}
+        else:
+            return feed[offset:offset+limit]
+
+    else:
+            abort(403, "Authentication token is invalid")
 
 
 #service funstions section
