@@ -13,6 +13,11 @@ for more information run postman collection [flask.postman_collection.json](http
 - `POST /user/register` - new user registration
 - `GET /user/<id>` - get user's profile
 - `GET /user/search` - search user
+- `GET /user/search` - search user
+
+- `PUT /user/friend` - add user friend
+- `POST /post/create` - create a new post for current user
+- `GET /post/feed` - get user's friends posts
 
 
 ## install instructions 
@@ -29,6 +34,7 @@ pip install pyjwt
 pip install datetime
 pip install uuid
 pip install mysql-connector-python
+pip install pylibmc
 ```
 - install and configure MySQL
 <br/> https://www.mysql.com/downloads/
