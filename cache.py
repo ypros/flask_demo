@@ -1,9 +1,9 @@
 
 import db
-import pylibmc
+from pymemcache.client.base import Client
 
+cache = Client('memcached')
 
-cache = pylibmc.Client(['127.0.0.1:11211'])
 
 def get_feed_chached(user_id):
 	feed = cache.get(user_id)

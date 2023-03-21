@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 mydb = mysql.connector.connect(
     user='root',
     password='password',
-    host='127.0.0.1',
+    host='mysql',
     database='flask')
 
 
