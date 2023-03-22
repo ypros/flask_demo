@@ -3,7 +3,8 @@ import csv
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
 #mydb = mysql.connector.connect(user='root', password='password', host='127.0.0.1',port=5000,database='test',auth_plugin='mysql_native_password')
-mydb = mysql.connector.connect(user='root', password='password', host='127.0.0.1', database='flask')
+#mydb = mysql.connector.connect(user='root', password='password', host='127.0.0.1', database='flask')
+mydb = mysql.connector.connect(user='root', password='password', host='localhost', port=33060, database='flask')
 
 count_users = 0
 

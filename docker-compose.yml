@@ -6,9 +6,15 @@ services:
       - "8000:5000"
     environment:
       FLASK_DEBUG: "true"
+    restart: on-failure
+    depends_on:
+      - mysql
+      - memcached
   mysql:
     container_name: mysql
     image: mysql:8.0
+    ports:
+      - "33060:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     environment:
