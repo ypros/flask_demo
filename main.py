@@ -214,23 +214,18 @@ def get_feed():
     except:
         limit = 10    
 
-    if 'Authorization' in request.headers:
-        token = request.headers.get('Authorization')
-        auth_data = decode_token(token)
+    current_user_id = authorization_user(request)
 
-        if 'user_id' not in auth_data:
-            abort(403, "Authorization token is invalid")
-        
-        current_user_id = auth_data['user_id']    
-
-        feed = cache.get_feed_chached(current_user_id)
-        if feed is None:
-            return {"success": False, "message": "Error getting user's feed"}
-        else:
-            return feed[offset:offset+limit]
-
+    if current_user_id is None:
+        abort(403, "Authorization token is invalid")
+         
+    feed = cache.get_feed_chached(current_user_id)
+    if feed is None:
+        return {"success": False, "message": "Error getting user's feed"}
     else:
-            abort(403, "Authorization token is invalid")
+        return feed[offset:offset+limit]
+
+
 
 #post user dialog
 @app.route('/api/v1/dialog/<user_id>/send', methods=['POST'])
@@ -253,6 +248,21 @@ def send_dialog(user_id):
     else:
         return dialog
 
+#post dialog list
+@app.route('/api/v1/dialog/<user_id>/list', methods=['GET'])
+def list_dialog(user_id):
+
+    current_user_id = authorization_user(request)
+
+    if current_user_id is None:
+        abort(403, "Authorization token is invalid")
+
+    dialog = citus.list_dialog(current_user_id, user_id)
+    if dialog is None:
+        return {"success": False, "message": "Error geting dialogs"}
+    else:
+        return dialog
+
 #test table insert
 @app.route('/api/v1/test', methods=['PUT'])
 def insert_into_test():
@@ -265,7 +275,6 @@ def insert_into_test():
 #service funstions section
 
 def authorization_user(request):
-
     user_id = None
 
     if 'Authorization' in request.headers:
