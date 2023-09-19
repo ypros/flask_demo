@@ -1,28 +1,25 @@
-import mysql.connector
+import psycopg2
 import uuid
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
-mydb = mysql.connector.connect(
-    user='root',
-    password='password',
-    host='mysql',
-    database='flask')
-
+mydb_write = psycopg2.connect("dbname=postgres user=postgres password=pass host=localhost port=5432")
+mydb_read = psycopg2.connect("dbname=postgres user=postgres password=pass host=localhost port=15432")
 
  
 #CREATE NEW USER IN USERS TABLE
 def create_new_user(first_name, last_name, password, age, biography, city):
     user_id = str(uuid.uuid4())
     password_hash = generate_password_hash(password)
+    print(password)
     print(password_hash)
 
-    cursor = mydb.cursor()
+    cursor = mydb_write.cursor()
     sql = "INSERT INTO users (id, first_name, last_name, password_hash, age, biography, city) VALUES (%s, %s, %s, %s, %s, %s, %s)"
     val = (user_id, first_name, last_name, password_hash, age, biography, city)
 
     cursor.execute(sql, val)
-    mydb.commit()
+    mydb_write.commit()
 
     cursor.close()
 
@@ -30,7 +27,8 @@ def create_new_user(first_name, last_name, password, age, biography, city):
 
 #GET USER'S DATA FROM USERS TABLE BY ID
 def get_user_info(user_id):
-    cursor = mydb.cursor()
+
+    cursor = mydb_read.cursor()
     sql = "SELECT id, first_name, last_name, age, biography, city FROM users WHERE id = %s"
     val = [(user_id)]
 
@@ -57,13 +55,13 @@ def get_user_info(user_id):
 #GET USERS FROM USERS TABLE SEARCHING ON NAMES 
 def search_user(first_name, last_name):
 
-    cursor = mydb.cursor()
+    cursor = mydb_read.cursor()
     sql = "SELECT id, first_name, last_name, age, biography, city FROM users WHERE first_name LIKE %s AND last_name LIKE %s ORDER BY id"
     val = (f"{first_name}%", f"{last_name}%")
 
     try:
         cursor.execute(sql, val)
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         return {'success': False, 'message': err.msg, 'payload': ""} 
 
     result = []
@@ -84,14 +82,14 @@ def search_user(first_name, last_name):
 
 def add_friend(user_id, friend_id):
 
-    cursor = mydb.cursor()
+    cursor = mydb_write.cursor()
     sql = "INSERT INTO friends (user, friend) VALUES (%s, %s)"
     val = (user_id, friend_id)
 
     try:
         cursor.execute(sql, val)
-        mydb.commit()
-    except mysql.connector.Error as err:
+        mydb_write.commit()
+    except psycopg2.Error as err:
         return err.errno 
 
     cursor.close()
@@ -99,7 +97,7 @@ def add_friend(user_id, friend_id):
     return True
 
 def get_feed(user_id):
-    cursor = mydb.cursor()
+    cursor = mydb_read.cursor()
     sql = """SELECT 
                 p.id id,
                 p.text text,
@@ -112,7 +110,7 @@ def get_feed(user_id):
 
     try:
         cursor.execute(sql, val)
-    except mysql.connector.Error as err:
+    except psycopg2.Error as err:
         return None
 
     result = []
@@ -129,39 +127,61 @@ def get_feed(user_id):
     return result
 
 
-
-
 #ADD USER'S POST IN POSTS
 def add_post(user_id, text):
     post_id = str(uuid.uuid4())
     current_datetime = datetime.datetime.utcnow()
 
-    cursor = mydb.cursor()
+    cursor = mydb_write.cursor()
     sql = "INSERT INTO posts (id, author_user_id, text, created_at) VALUES (%s, %s, %s, %s)"
     val = (post_id, user_id, text, current_datetime)
 
     try:
         cursor.execute(sql, val)
-        mydb.commit()
-    except mysql.connector.Error as err:
+        mydb_write.commit()
+    except psycopg2.Error as err:
         print(err.msg)
         return None 
 
     cursor.close()
 
-    return post_id       
+    return post_id 
+
+
+#SEND DIALOG
+def send_dialog(from_user_id, to_user_id, text):
+    
+    dialog_id = str(uuid.uuid4())
+    current_datetime = datetime.datetime.utcnow()
+
+    cursor = mydb_write.cursor()
+    sql = "INSERT INTO dialogs (id, from_user_id, to_user_id, text, created_at) VALUES (%s, %s, %s, %s, %s)"
+    val = (dialog_id, from_user_id, to_user_id, text, current_datetime)
+
+    try:
+        cursor.execute(sql, val)
+        mydb_write.commit()
+    except psycopg2.Error as err:
+        return None 
+
+    cursor.close()
+
+    return dialog_id         
 
 
 #VERIFY USER PASSWORS FOR AUTH
 def verify_user(user_id, user_password):
-    cursor = mydb.cursor()
+
+    cursor = mydb_read.cursor()
     sql = "SELECT id, password_hash FROM users WHERE id = %s"
     val = [(user_id)]
 
     cursor.execute(sql, val)
     result = False
 
+
     for (id, password_hash) in cursor:
+
         if check_password_hash(password_hash, user_password):
             result = True
       
@@ -169,6 +189,24 @@ def verify_user(user_id, user_password):
     cursor.close()
 
     return result
+
+
+def insert_into_test():
+    
+    cursor = mydb_write.cursor()
+    sql = "INSERT INTO test (message) VALUES ('test');"
+
+    try:
+        cursor.execute(sql)
+        mydb_write.commit()
+    except psycopg2.Error as err:
+        return None 
+
+    cursor.close()
+
+    return True  
+
+
 
 
 

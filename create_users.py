@@ -4,7 +4,7 @@ import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
 #mydb = mysql.connector.connect(user='root', password='password', host='127.0.0.1',port=5000,database='test',auth_plugin='mysql_native_password')
 #mydb = mysql.connector.connect(user='root', password='password', host='127.0.0.1', database='flask')
-mydb = mysql.connector.connect(user='root', password='password', host='localhost', port=33060, database='flask')
+mydb = mysql.connector.connect(user='root', password='password', host='localhost', port=33060, database='flask', auth_plugin='mysql_native_password')
 
 count_users = 0
 
@@ -28,8 +28,8 @@ with open('people.csv', newline='') as csvfile:
         
         user_id = str(uuid.uuid4())
 
-        #if count_users > 5:
-        #    break
+        if count_users > 1000:
+            break
 
         #
         val = (user_id, first_name, last_name, password_hash, age, biography, city)

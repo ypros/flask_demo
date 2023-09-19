@@ -2,7 +2,9 @@ import mysql.connector
 from mysql.connector import errorcode
 
 #mydb = mysql.connector.connect(user='root', password='password', host='127.0.0.1',port=5000,database='test',auth_plugin='mysql_native_password')
+#cnx = mysql.connector.connect(user='root', password='password', host='localhost', port=33060, database='flask')
 cnx = mysql.connector.connect(user='root', password='password', host='localhost', port=33060, database='flask')
+
 cursor = cnx.cursor()
 
 tables = {}
@@ -49,6 +51,8 @@ tables['posts'] = (
     "  PRIMARY KEY (`id`),"
     "  CONSTRAINT posts_FK FOREIGN KEY (author_user_id) REFERENCES flask.users(id)"
     ") ENGINE=InnoDB")
+
+
 
 def create_tables(tables):
     for table_name in tables:

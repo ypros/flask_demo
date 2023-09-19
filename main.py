@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, redirect, url_for, request, abort
-import forms, db, cache
+import forms, db, cache, citus
 import jwt
 import datetime
 
@@ -54,7 +54,7 @@ def login():
         if result:
             return redirect(url_for('user', id=form.id.data))
         else:
-            flash("Authentication failed! Try again") 
+            flash("Authorization failed! Try again") 
 
     user_id = request.args.get('id')
     form.id.data = user_id
@@ -88,7 +88,7 @@ def api_login():
         token = encone_token(user_id)
         return {"token": token}
     else:
-        abort(400, "authentication failed")
+        abort(400, "Authorization failed")
 
 #register new user
 @app.route('/api/v1/user/register', methods=['POST'])
@@ -147,8 +147,8 @@ def api_search():
 @app.route('/api/v1/friend/set/<user_id>', methods=['PUT'])
 def put_user_friend(user_id):
 
-    if 'Authentication' in request.headers:
-        token = request.headers.get('Authentication')
+    if 'Authorization' in request.headers:
+        token = request.headers.get('Authorization')
         auth_data = decode_token(token)
 
         if 'user_id' in auth_data:
@@ -166,20 +166,20 @@ def put_user_friend(user_id):
             else:
                 abort(400, "Bad request")
         else:
-            abort(403, "Authentication token is invalid")
+            abort(403, "Authorization token is invalid")
 
-    return {"success": False, "message": "Authentication token is required"}
+    return {"success": False, "message": "Authorization token is required"}
 
 #create new post for currnet user
 @app.route('/api/v1/post/create', methods=['POST'])
 def create_post():
 
-    if 'Authentication' in request.headers:
-        token = request.headers.get('Authentication')
+    if 'Authorization' in request.headers:
+        token = request.headers.get('Authorization')
         auth_data = decode_token(token)
 
         if 'user_id' not in auth_data:
-            abort(403, "Authentication token is invalid")
+            abort(403, "Authorization token is invalid")
         current_user_id = auth_data['user_id']    
 
         post_data = request.get_json(silent=True)
@@ -197,7 +197,7 @@ def create_post():
             cache.clear_cache(current_user_id)
             return post_id
     else:
-            abort(403, "Authentication token is invalid")
+            abort(403, "Authorization token is invalid")
 
 #get user feed
 @app.route('/api/v1/post/feed', methods=['GET'])
@@ -214,12 +214,12 @@ def get_feed():
     except:
         limit = 10    
 
-    if 'Authentication' in request.headers:
-        token = request.headers.get('Authentication')
+    if 'Authorization' in request.headers:
+        token = request.headers.get('Authorization')
         auth_data = decode_token(token)
 
         if 'user_id' not in auth_data:
-            abort(403, "Authentication token is invalid")
+            abort(403, "Authorization token is invalid")
         
         current_user_id = auth_data['user_id']    
 
@@ -230,10 +230,55 @@ def get_feed():
             return feed[offset:offset+limit]
 
     else:
-            abort(403, "Authentication token is invalid")
+            abort(403, "Authorization token is invalid")
 
+#post user dialog
+@app.route('/api/v1/dialog/<user_id>/send', methods=['POST'])
+def send_dialog(user_id):
+
+    post_data = request.get_json()
+    text = post_data.get("text")
+    
+    if text  is None:
+        abort(400, "'text' body parameter is required")
+
+    current_user_id = authorization_user(request)
+
+    if current_user_id is None:
+        abort(403, "Authorization token is invalid")
+
+    dialog = citus.send_dialog(current_user_id, user_id, text)
+    if dialog is None:
+        return {"success": False, "message": "Error sending text"}
+    else:
+        return dialog
+
+#test table insert
+@app.route('/api/v1/test', methods=['PUT'])
+def insert_into_test():
+
+    db.insert_into_test()
+
+    return "Ok"
+            
 
 #service funstions section
+
+def authorization_user(request):
+
+    user_id = None
+
+    if 'Authorization' in request.headers:
+        token = request.headers.get('Authorization')
+        auth_data = decode_token(token)
+
+
+        if 'user_id' in auth_data:
+            user_id = auth_data['user_id']
+
+    return user_id     
+
+
 
 def encone_token(user_id):
     """
@@ -243,7 +288,7 @@ def encone_token(user_id):
     """
     try:
         payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=600),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=3600),
             'iat': datetime.datetime.utcnow(),
             'sub': user_id
         }
@@ -271,4 +316,4 @@ def decode_token(auth_token):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)
