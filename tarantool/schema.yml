@@ -1,0 +1,24 @@
+spaces:
+  dialogs:
+    engine: memtx
+    is_local: false
+    temporary: false
+    sharding_key:
+    - "partion_id"
+    format:
+    - {name: bucket_id, type: unsigned, is_nullable: false}
+    - {name: partion_id, type: unsigned, is_nullable: false}
+    - {name: dialog_id, type: uuid, is_nullable: false}
+    - {name: user_from_id, type: uuid, is_nullable: false}
+    - {name: user_to_id, type: uuid, is_nullable: false}
+    - {name: text, type: uuid, is_nullable: false}
+    - {name: created_at, type: string, is_nullable: true}
+    indexes:
+    - name: dualog_id
+      unique: true
+      parts: [{path: dualog_id, type: uuid, is_nullable: false}]
+      type: HASH
+    - name: bucket_id
+      unique: false
+      parts: [{path: bucket_id, type: unsigned, is_nullable: false}]
+      type: TREE

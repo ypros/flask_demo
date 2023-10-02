@@ -1,5 +1,5 @@
 from flask import Flask, render_template, flash, redirect, url_for, request, abort
-import forms, db, cache, citus
+import forms, db, cache, taran
 import jwt
 import datetime
 
@@ -242,7 +242,8 @@ def send_dialog(user_id):
     if current_user_id is None:
         abort(403, "Authorization token is invalid")
 
-    dialog = citus.send_dialog(current_user_id, user_id, text)
+    #dialog = db.send_dialog(current_user_id, user_id, text)
+    dialog = taran.send_dialog(current_user_id, user_id, text)
     if dialog is None:
         return {"success": False, "message": "Error sending text"}
     else:
@@ -257,19 +258,13 @@ def list_dialog(user_id):
     if current_user_id is None:
         abort(403, "Authorization token is invalid")
 
-    dialog = citus.list_dialog(current_user_id, user_id)
+    dialog = db.list_dialog(current_user_id, user_id)
     if dialog is None:
         return {"success": False, "message": "Error geting dialogs"}
     else:
         return dialog
 
-#test table insert
-@app.route('/api/v1/test', methods=['PUT'])
-def insert_into_test():
 
-    db.insert_into_test()
-
-    return "Ok"
             
 
 #service funstions section

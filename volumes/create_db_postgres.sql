@@ -36,15 +36,15 @@ CREATE TABLE posts (
 
 
 CREATE TABLE public.dialogs (
-    id char(36) NOT NULL,
-    from_user_id char(36) NOT NULL,
-    to_user_id char(36) NOT NULL,
-    text text NOT NULL,
+    id bpchar NOT NULL,
+    partion_id int8 NOT NULL,
+    from_user_id bpchar NOT NULL,
+    to_user_id bpchar NOT NULL,
+    "text" text NOT NULL,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT dialogs_pk PRIMARY KEY (id),
     CONSTRAINT dialogs_fk_1 FOREIGN KEY (to_user_id) REFERENCES public.users(id),
     CONSTRAINT dialogs_fk_2 FOREIGN KEY (from_user_id) REFERENCES public.users(id)
-    );
-
-CREATE INDEX dialogs_from_user_id_idx ON public.dialogs (from_user_id);
-CREATE INDEX dialogs_to_user_id_idx ON public.dialogs (to_user_id);
+);
+CREATE INDEX dialogs_from_user_id_idx ON public.dialogs USING btree (from_user_id);
+CREATE INDEX dialogs_to_user_id_idx ON public.dialogs USING btree (to_user_id);
