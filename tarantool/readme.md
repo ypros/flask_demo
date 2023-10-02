@@ -49,29 +49,33 @@
 
 ## Тестирование производительности
 
+  Для запросов к tarantool использовалась библиотека `tarantool/tarantool-python`
+  Из приложения вызывались встроенные функции на lua.
+
 ### Запись нового диалога двух пользователей
 
    Запись в posgres
 
-   !(post dialog users 10.png)[post dialog users 10.png]
-   !(post dialog users 50.png)[post dialog users 50.png]
+   ![post dialog users 10.png](https://github.com/ypros/flask_demo/blob/main/tarantool/post%20dialog%20users%2010.png)
+   ![post dialog users 50.png](https://github.com/ypros/flask_demo/blob/main/tarantool/post%20dialog%20users%2050.png)
 
    Запись в tarantool
 
-   !(post dialog tarantool 10.png)[post dialog tarantool 10.png]
+   ![post dialog tarantool 10.png](https://github.com/ypros/flask_demo/blob/main/tarantool/post%20dialog%20tarantool%2010.png)
 
 ### Выборка всех диалогов между пользователями
 
    Чтение из postgres
 
-   !(read dialog 10.png)[read dialog 10.png]
-   !(read dialog stats 10.png)[read dialog stats 10.png]
+   ![read dialog 10.png](https://github.com/ypros/flask_demo/blob/main/tarantool/read%20dialog%2010.png)
+   ![read dialog stats 10.png](https://github.com/ypros/flask_demo/blob/main/tarantool/read%20dialog%20stats%2010.png)
 
    Чтение из tarantool
 
-   !(read dialog tarantool 10.png)[read dialog tarantool 10.png]
-   !(read dialog tarantool stats 10.png)[read dialog tarantool stats 10.png]
+   ![read dialog tarantool 10.png](https://github.com/ypros/flask_demo/blob/main/tarantool/read%20dialog%20tarantool%2010.png)
+   ![read dialog tarantool stats 10.png](https://github.com/ypros/flask_demo/blob/main/tarantool/read%20dialog%20tarantool%20stats.png)
 
+### Вывод
 
-
+   Чтение и запись в tarantool выполняется быстрее при нагрузке в 10 потоков. При увеличении нагрузки до 50 потоков, сервис выдавал ошибки при чтении и записи в tarantool, в отличие от posgres. Вероятно для подключения к tarantool лучше использовать другую библиотеку позволяющую делать запросы асинхронно. Сравнение библиотек https://www.tarantool.io/en/doc/latest/book/connectors/python/
 
