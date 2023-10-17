@@ -15,8 +15,8 @@
 ## flask сервис
 В монолитном сервисе добавлена поддержка новых методов и оставлены старые методы для обратной совместимости
 Новые методы:
-   - `POST /api/v2/dialog/send`
-   - `GET /api/v2/dialog/list`
+   - `POST /api/v2/dialog/<user_id>/send`
+   - `GET /api/v2/dialog/<user_id>/list`
 
 
 
