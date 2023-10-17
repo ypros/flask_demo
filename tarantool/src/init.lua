@@ -16,13 +16,18 @@ lua_code = [[function(dialog_id, user_from, user_to, text)
     uuid = require('uuid')
     datetime = require('datetime')
 	new_uuid = uuid.new()
-	box.space.dialogs:insert{new_uuid, dialog_id, uuid.fromstr(user_from), uuid.fromstr(user_to), text, datetime.new()}
+	box.space.dialogs:insert{new_uuid, dialog_id, uuid.fromstr(user_from), uuid.fromstr(user_to), text, datetime.now()}
 	return new_uuid:str() end]]
 
 box.schema.func.create('new_dialog', {body = lua_code})
 
+lua_code = [[function(dialog_id)
+	return box.space.dialogs.index.dialog_id_k:select({dialog_id})
+	end]]
+
+box.schema.func.create('get_dialog', {body = lua_code})
+
 
 box.schema.user.grant('guest', 'execute', 'function', 'new_dialog')
+box.schema.user.grant('guest', 'execute', 'function', 'get_dialog')
 box.schema.user.grant('guest', 'read,write,execute', 'universe')
-
-

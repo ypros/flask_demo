@@ -83,15 +83,17 @@ def search_user(first_name, last_name):
 
 def add_friend(user_id, friend_id):
 
+    new_id = str(uuid.uuid4())
+
     cursor = mydb_write.cursor()
-    sql = "INSERT INTO friends (user, friend) VALUES (%s, %s)"
-    val = (user_id, friend_id)
+    sql = "INSERT INTO friends (id, user_id, friend) VALUES (%s, %s, %s)"
+    val = (new_id, user_id, friend_id)
 
     try:
         cursor.execute(sql, val)
         mydb_write.commit()
     except psycopg2.Error as err:
-        return err.errno 
+        return err.msg 
 
     cursor.close()
 
@@ -147,6 +149,44 @@ def add_post(user_id, text):
     cursor.close()
 
     return post_id 
+
+#ADD USER'S POST IN POSTS
+def add_post_friends(user_id, text):
+    cursor = mydb_read.cursor()
+    sql = """SELECT 
+                f.friend friend
+            from friends f where f.user_id = %s"""
+    val = [(user_id)]
+
+    try:
+        cursor.execute(sql, val)
+    except psycopg2.Error as err:
+        return None
+
+    friends = []
+    
+    for friend in cursor:
+        friends.append(friend[0])
+
+    cursor.close()
+
+    post_id = str(uuid.uuid4())
+    current_datetime = datetime.datetime.utcnow()
+
+    cursor = mydb_write.cursor()
+    sql = "INSERT INTO posts (id, author_user_id, text, created_at) VALUES (%s, %s, %s, %s)"
+    val = (post_id, user_id, text, current_datetime)
+
+    try:
+        cursor.execute(sql, val)
+        mydb_write.commit()
+    except psycopg2.Error as err:
+        print(err.msg)
+        return None 
+
+    cursor.close()
+
+    return {post_id, tuple(friends)}     
         
 
 

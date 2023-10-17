@@ -1,0 +1,8 @@
+ version: '3.2'
+ services:
+   tarantool:
+     build: src
+   tarantool-nginx:
+     depends_on: 
+       - tarantool
+     build: http

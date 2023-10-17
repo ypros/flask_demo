@@ -1,12 +1,17 @@
 from flask import Flask, render_template, flash, redirect, url_for, request, abort
-import forms, db, cache, taran
+import forms, db, cache, taran, rabbit, reqs
 import jwt
 import datetime
+import logging 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'D3O5W8iIsiGjoLck1KQ3VzjCypqvT7oV'
 app.config["JSON_AS_ASCII"] = False
 app.config["JSONIFY_MIMETYPE"] = "application/json; charset=utf-8"
+
+LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
+              '-35s %(lineno) -5d: %(message)s')
+LOGGER = logging.getLogger(__name__)
 
 @app.route('/')
 def index():
@@ -60,9 +65,6 @@ def login():
     form.id.data = user_id
 
     return render_template('login.html', form=form)
-
-
-
 
 
 #API functions section
@@ -190,11 +192,12 @@ def create_post():
         if text is None:
             abort(400, "Post text is required")
   
-        post_id = db.add_post(current_user_id, text)
+        (post_id, friends) = db.add_post_friends(current_user_id, text)
         if post_id is None:
             return {"success": False, "message": "Error creating new post"}
         else:
-            cache.clear_cache(current_user_id)
+            #cache.clear_cache(current_user_id)
+            rabbit.add_post(current_user_id, post_id, friends, text)
             return post_id
     else:
             abort(403, "Authorization token is invalid")
@@ -249,7 +252,7 @@ def send_dialog(user_id):
     else:
         return dialog
 
-#post dialog list
+#post dialog list V2
 @app.route('/api/v1/dialog/<user_id>/list', methods=['GET'])
 def list_dialog(user_id):
 
@@ -264,6 +267,51 @@ def list_dialog(user_id):
     else:
         return dialog
 
+
+
+#post user dialog V2
+@app.route('/api/v2/dialog/<user_id>/send', methods=['POST'])
+def send_dialog_v2(user_id):
+
+    post_data = request.get_json()
+    text = post_data.get("text")
+    
+    if text  is None:
+        abort(400, "'text' body parameter is required")
+
+    current_user_id = authorization_user(request)
+
+    if current_user_id is None:
+        abort(403, "Authorization token is invalid")
+
+    #dialog = db.send_dialog(current_user_id, user_id, text)
+    #dialog = taran.send_dialog(current_user_id, user_id, text)
+    dialog = reqs.send_dialog(current_user_id, user_id, text)
+    if dialog is None:
+        return {"success": False, "message": "Error sending text"}
+    else:
+        return dialog
+
+#get dialog list
+@app.route('/api/v2/dialog/<user_id>/list', methods=['GET'])
+def list_dialog_v2(user_id):
+
+    LOGGER.info('Receive request /api/v2/dialog/<user_id>/list.  user_id = %s', user_id)
+
+    current_user_id = authorization_user(request)
+
+    if current_user_id is None:
+
+        LOGGER.warning('Authorization token is invalid.  user_id = %s', user_id)
+
+        abort(403, "Authorization token is invalid")
+
+    #dialog = db.list_dialog(current_user_id, user_id)
+    dialog = reqs.list_dialog(current_user_id, user_id)
+    if dialog is None:
+        return {"success": False, "message": "Error geting dialogs"}
+    else:
+        return dialog
 
             
 
@@ -320,4 +368,4 @@ def decode_token(auth_token):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)

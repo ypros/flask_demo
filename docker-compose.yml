@@ -1,4 +1,8 @@
 services:
+  tarantool:
+    build: tarantool/src
+    ports:
+      - "3302:3302"
   web:
     container_name: flask
     build: .
@@ -8,18 +12,8 @@ services:
       FLASK_DEBUG: "true"
     restart: on-failure
     depends_on:
-      - mysql
+      - tarantool
       - memcached
-  mysql:
-    container_name: mysql
-    image: mysql:8.0
-    ports:
-      - "33060:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: flask
   memcached:
     container_name: memcached
     image: memcached:latest
