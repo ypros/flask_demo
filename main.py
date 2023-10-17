@@ -252,7 +252,7 @@ def send_dialog(user_id):
     else:
         return dialog
 
-#post dialog list V2
+#post dialog list
 @app.route('/api/v1/dialog/<user_id>/list', methods=['GET'])
 def list_dialog(user_id):
 
@@ -272,6 +272,8 @@ def list_dialog(user_id):
 #post user dialog V2
 @app.route('/api/v2/dialog/<user_id>/send', methods=['POST'])
 def send_dialog_v2(user_id):
+
+    LOGGER.info('Receive request /api/v2/dialog/<user_id>/send.  user_id = %s', user_id)
 
     post_data = request.get_json()
     text = post_data.get("text")
