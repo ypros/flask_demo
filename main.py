@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, request, abort
+from flask import Flask, render_template, flash, redirect, url_for, request, abort, Response
 import forms, db, cache, taran, rabbit, reqs
 import jwt
 import datetime
@@ -192,13 +192,14 @@ def create_post():
         if text is None:
             abort(400, "Post text is required")
   
-        (post_id, friends) = db.add_post_friends(current_user_id, text)
-        if post_id is None:
-            return {"success": False, "message": "Error creating new post"}
-        else:
+        #(post_id, friends) = db.add_post_friends(current_user_id, text)
+        #if post_id is None:
+        #    return {"success": False, "message": "Error creating new post"}
+        #else:
             #cache.clear_cache(current_user_id)
-            rabbit.add_post(current_user_id, post_id, friends, text)
-            return post_id
+        rabbit.add_post(current_user_id, text)
+        return Response({"success": True}, status=202, mimetype='application/json')
+        #    return post_id
     else:
             abort(403, "Authorization token is invalid")
 
@@ -370,4 +371,4 @@ def decode_token(auth_token):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=8001, debug=True)
